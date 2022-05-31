@@ -1,18 +1,18 @@
 {
   "name": "@vaadin/common-frontend",
   "version": "0.0.17",
-  "description": "Vaadin frontend utils used by Flow and Fusion",
+  "description": "Vaadin frontend utils used by Flow and Hilla",
   "main": "index.js",
   "module": "index.js",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vaadin/flow-fusion-common.git",
+    "url": "https://github.com/vaadin/flow-hilla-common.git",
     "directory": "frontend/packages/common-frontend"
   },
   "keywords": [
     "Vaadin",
-    "Fusion"
+    "Hilla"
   ],
   "scripts": {
     "build": "tsc --isolatedModules",
@@ -39,9 +39,9 @@
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/vaadin/fusion/issues"
+    "url": "https://github.com/vaadin/flow-hilla-common/issues"
   },
-  "homepage": "https://vaadin.com/fusion",
+  "homepage": "https://vaadin.com",
   "files": [
     "*.{d.ts.map,d.ts,js.map,js}"
   ],
