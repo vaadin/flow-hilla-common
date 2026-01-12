@@ -118,7 +118,6 @@ export class ConnectionIndicator extends LitElement {
   @state()
   accessor #loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
-  @state()
   accessor #isPopover: boolean = false;
 
   #applyDefaultThemeState = true;
