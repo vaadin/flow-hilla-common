@@ -288,10 +288,14 @@ export class ConnectionIndicator extends LitElement {
   #updatePopoverState() {
     const showPopover = this.loading || this.offline || this.reconnecting || this.expanded;
 
-    if (showPopover && !this.#isPopover) {
-      this.showPopover();
-    } else if (!showPopover && this.#isPopover) {
+    // Always close the popover first on state changes. This way, on every state change,
+    // showPopover is called again, resulting in the connection indicator being shown on
+    // top of other popovers that might have been added, for example after a reconnect.
+    if (this.#isPopover) {
       this.hidePopover();
+    }
+    if (showPopover) {
+      this.showPopover();
     }
     this.#isPopover = showPopover;
   }
