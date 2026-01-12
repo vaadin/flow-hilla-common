@@ -118,6 +118,9 @@ export class ConnectionIndicator extends LitElement {
   @state()
   accessor #loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
+  @state()
+  accessor #isPopover: boolean = false;
+
   #applyDefaultThemeState = true;
 
   #firstTimeout = 0;
@@ -167,6 +170,8 @@ export class ConnectionIndicator extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
 
+    this.#initPopover();
+
     const $wnd = window as any;
     if ($wnd.Vaadin?.connectionState) {
       this.#connectionStateStore = $wnd.Vaadin.connectionState as ConnectionStateStore;
@@ -185,6 +190,7 @@ export class ConnectionIndicator extends LitElement {
     }
 
     this.#updateTheme();
+    this.#isPopover = false;
   }
 
   get applyDefaultTheme() {
@@ -203,6 +209,18 @@ export class ConnectionIndicator extends LitElement {
     return this;
   }
 
+  #initPopover() {
+    // Allow showing the indicator as popover
+    this.setAttribute('popover', 'manual');
+    // Override user agent styles for popover
+    this.style.border = 'none';
+    this.style.padding = '0';
+    this.style.background = 'none';
+    this.style.width = '0';
+    this.style.height = '0';
+    this.style.overflow = 'visible';
+  }
+
   /**
    * Update state flags.
    *
@@ -214,6 +232,7 @@ export class ConnectionIndicator extends LitElement {
     this.offline = connectionState === ConnectionState.CONNECTION_LOST;
     this.reconnecting = connectionState === ConnectionState.RECONNECTING;
     this.#updateLoading(connectionState === ConnectionState.LOADING);
+    this.#updatePopoverState();
     if (this.loading) {
       // Entering loading state, do not show message
       return false;
@@ -260,6 +279,18 @@ export class ConnectionIndicator extends LitElement {
       this.thirdDelay,
     );
   }
+
+  #updatePopoverState() {
+    const showPopover = this.loading || this.offline || this.reconnecting;
+
+    if (showPopover && !this.#isPopover) {
+      this.showPopover();
+    } else if (!showPopover && this.#isPopover) {
+      this.hidePopover();
+    }
+    this.#isPopover = showPopover;
+  }
+
 
   #renderMessage() {
     if (this.reconnecting) {
