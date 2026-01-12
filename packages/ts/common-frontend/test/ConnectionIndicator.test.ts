@@ -83,9 +83,10 @@ describe('ConnectionIndicator', () => {
     });
 
     it('should set popover styles when connected', () => {
+      assert.equal(connectionIndicator.style.display, 'contents');
       assert.equal(connectionIndicator.style.border, 'none');
-      assert.equal(connectionIndicator.style.padding, '0px');
       assert.equal(connectionIndicator.style.background, 'none');
+      assert.equal(connectionIndicator.style.padding, '0px');
       assert.equal(connectionIndicator.style.width, '0px');
       assert.equal(connectionIndicator.style.height, '0px');
       assert.equal(connectionIndicator.style.overflow, 'visible');
@@ -197,6 +198,7 @@ describe('ConnectionIndicator', () => {
       assert.equal(String(message.textContent).trim(), connectionIndicator.reconnectingText);
       // Message did change, should cause expanded
       assert.isTrue(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
       await sleep(20);
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isTrue(isPopoverOpen());
@@ -209,6 +211,7 @@ describe('ConnectionIndicator', () => {
       assert.equal(String(message.textContent).trim(), connectionIndicator.offlineText);
       // Message did change, should cause expanded
       assert.isTrue(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
       await sleep(20);
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isTrue(isPopoverOpen());
@@ -231,6 +234,7 @@ describe('ConnectionIndicator', () => {
       assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
       // Message did change from before loading, should cause expanded
       assert.isTrue(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
       await sleep(20);
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isFalse(isPopoverOpen());

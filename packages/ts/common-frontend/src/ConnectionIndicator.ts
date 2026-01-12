@@ -14,7 +14,7 @@
  * the License.
  */
 
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ConnectionState, type ConnectionStateStore } from './ConnectionState.js';
@@ -193,6 +193,12 @@ export class ConnectionIndicator extends LitElement {
     this.#isPopover = false;
   }
 
+  protected override updated(props: PropertyValues): void {
+    if (['loading', 'offline', 'reconnecting', 'expanded'].some((p) => props.has(p))) {
+      this.#updatePopoverState();
+    }
+  }
+
   get applyDefaultTheme() {
     return this.#applyDefaultThemeState;
   }
@@ -213,9 +219,10 @@ export class ConnectionIndicator extends LitElement {
     // Allow showing the indicator as popover
     this.setAttribute('popover', 'manual');
     // Override user agent styles for popover
+    this.style.display = 'contents';
     this.style.border = 'none';
-    this.style.padding = '0';
     this.style.background = 'none';
+    this.style.padding = '0';
     this.style.width = '0';
     this.style.height = '0';
     this.style.overflow = 'visible';
@@ -232,7 +239,6 @@ export class ConnectionIndicator extends LitElement {
     this.offline = connectionState === ConnectionState.CONNECTION_LOST;
     this.reconnecting = connectionState === ConnectionState.RECONNECTING;
     this.#updateLoading(connectionState === ConnectionState.LOADING);
-    this.#updatePopoverState();
     if (this.loading) {
       // Entering loading state, do not show message
       return false;
@@ -281,7 +287,7 @@ export class ConnectionIndicator extends LitElement {
   }
 
   #updatePopoverState() {
-    const showPopover = this.loading || this.offline || this.reconnecting;
+    const showPopover = this.loading || this.offline || this.reconnecting || this.expanded;
 
     if (showPopover && !this.#isPopover) {
       this.showPopover();
