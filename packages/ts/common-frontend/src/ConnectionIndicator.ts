@@ -291,7 +291,6 @@ export class ConnectionIndicator extends LitElement {
     this.#isPopover = showPopover;
   }
 
-
   #renderMessage() {
     if (this.reconnecting) {
       return this.reconnectingText;
