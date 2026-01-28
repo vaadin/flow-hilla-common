@@ -77,20 +77,25 @@ describe('ConnectionIndicator', () => {
       // Add back to prevent errors in afterEach
       document.body.prepend(connectionIndicator);
     });
+
+    it('should set popover attribute when connected', () => {
+      assert.equal(connectionIndicator.getAttribute('popover'), 'manual');
+    });
+
+    it('should set popover styles when connected', () => {
+      assert.equal(connectionIndicator.style.display, 'contents');
+      assert.equal(connectionIndicator.style.border, 'none');
+      assert.equal(connectionIndicator.style.background, 'none');
+      assert.equal(connectionIndicator.style.padding, '0px');
+      assert.equal(connectionIndicator.style.width, '0px');
+      assert.equal(connectionIndicator.style.height, '0px');
+      assert.equal(connectionIndicator.style.overflow, 'visible');
+    });
   });
 
   describe('with state store', () => {
     let connectionStateStore: ConnectionStateStore;
     let message: HTMLSpanElement;
-
-    beforeEach(() => {
-      connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
-      $wnd.Vaadin = { connectionState: connectionStateStore };
-    });
-
-    afterEach(() => {
-      delete $wnd.Vaadin;
-    });
 
     async function setupIndicator() {
       connectionIndicator = document.createElement('vaadin-connection-indicator');
@@ -100,137 +105,139 @@ describe('ConnectionIndicator', () => {
       message = connectionIndicator.querySelector('.v-status-message > span')!;
     }
 
-    function destroyIndicator() {
-      document.body.removeChild(connectionIndicator);
+    function isPopoverOpen() {
+      return document.querySelector('vaadin-connection-indicator:popover-open') !== null;
     }
 
-    it('initial state: connected', async () => {
-      try {
-        await setupIndicator();
+    beforeEach(() => {
+      connectionStateStore = new ConnectionStateStore(ConnectionState.CONNECTED);
+      $wnd.Vaadin = { connectionState: connectionStateStore };
+    });
 
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
-      } finally {
-        destroyIndicator();
-      }
+    afterEach(() => {
+      delete $wnd.Vaadin;
+      connectionIndicator.remove();
+    });
+
+    it('initial state: connected', async () => {
+      await setupIndicator();
+
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
     });
 
     it('initial state: loading', async () => {
-      try {
-        connectionStateStore.state = ConnectionState.LOADING;
-        await setupIndicator();
+      connectionStateStore.state = ConnectionState.LOADING;
+      await setupIndicator();
 
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isTrue(connectionIndicator.hasAttribute('loading'));
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
-      } finally {
-        destroyIndicator();
-      }
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isTrue(connectionIndicator.hasAttribute('loading'));
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
+      assert.isTrue(isPopoverOpen());
     });
 
     it('initial state: reconnecting', async () => {
-      try {
-        connectionStateStore.state = ConnectionState.RECONNECTING;
+      connectionStateStore.state = ConnectionState.RECONNECTING;
 
-        await setupIndicator();
+      await setupIndicator();
 
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isTrue(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.reconnectingText);
-      } finally {
-        destroyIndicator();
-      }
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isTrue(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.reconnectingText);
+      assert.isTrue(isPopoverOpen());
     });
 
     it('initial state: connection lost', async () => {
-      try {
-        connectionStateStore.state = ConnectionState.CONNECTION_LOST;
+      connectionStateStore.state = ConnectionState.CONNECTION_LOST;
 
-        await setupIndicator();
+      await setupIndicator();
 
-        assert.isTrue(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.offlineText);
-      } finally {
-        destroyIndicator();
-      }
+      assert.isTrue(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.offlineText);
+      assert.isTrue(isPopoverOpen());
     });
 
     it('should react on store state change', async () => {
-      try {
-        await setupIndicator();
+      await setupIndicator();
 
-        connectionStateStore.state = ConnectionState.LOADING;
-        await connectionIndicator.updateComplete;
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
-        assert.isTrue(connectionIndicator.hasAttribute('loading'));
-        // Loading should not cause expanded message
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      connectionStateStore.state = ConnectionState.LOADING;
+      await connectionIndicator.updateComplete;
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
+      assert.isTrue(connectionIndicator.hasAttribute('loading'));
+      // Loading should not cause expanded message
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
 
-        connectionStateStore.state = ConnectionState.CONNECTED;
-        await connectionIndicator.updateComplete;
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
-        // Message did not change from before loading, should not cause expanded
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      connectionStateStore.state = ConnectionState.CONNECTED;
+      await connectionIndicator.updateComplete;
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
+      // Message did not change from before loading, should not cause expanded
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.isFalse(isPopoverOpen());
 
-        connectionStateStore.state = ConnectionState.RECONNECTING;
-        await connectionIndicator.updateComplete;
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isTrue(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.reconnectingText);
-        // Message did change, should cause expanded
-        assert.isTrue(connectionIndicator.hasAttribute('expanded'));
-        await sleep(20);
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      connectionStateStore.state = ConnectionState.RECONNECTING;
+      await connectionIndicator.updateComplete;
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isTrue(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.reconnectingText);
+      // Message did change, should cause expanded
+      assert.isTrue(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
+      await sleep(20);
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
 
-        connectionStateStore.state = ConnectionState.CONNECTION_LOST;
-        await connectionIndicator.updateComplete;
-        assert.isTrue(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.offlineText);
-        // Message did change, should cause expanded
-        assert.isTrue(connectionIndicator.hasAttribute('expanded'));
-        await sleep(20);
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      connectionStateStore.state = ConnectionState.CONNECTION_LOST;
+      await connectionIndicator.updateComplete;
+      assert.isTrue(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.offlineText);
+      // Message did change, should cause expanded
+      assert.isTrue(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
+      await sleep(20);
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
 
-        connectionStateStore.state = ConnectionState.LOADING;
-        await connectionIndicator.updateComplete;
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
-        assert.isTrue(connectionIndicator.hasAttribute('loading'));
-        // Loading should not cause expanded message
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      connectionStateStore.state = ConnectionState.LOADING;
+      await connectionIndicator.updateComplete;
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
+      assert.isTrue(connectionIndicator.hasAttribute('loading'));
+      // Loading should not cause expanded message
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
 
-        connectionStateStore.state = ConnectionState.CONNECTED;
-        await connectionIndicator.updateComplete;
-        assert.isFalse(connectionIndicator.hasAttribute('offline'));
-        assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
-        assert.isFalse(connectionIndicator.hasAttribute('loading'));
-        assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
-        // Message did change from before loading, should cause expanded
-        assert.isTrue(connectionIndicator.hasAttribute('expanded'));
-        await sleep(20);
-        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
-      } finally {
-        destroyIndicator();
-      }
+      connectionStateStore.state = ConnectionState.CONNECTED;
+      await connectionIndicator.updateComplete;
+      assert.isFalse(connectionIndicator.hasAttribute('offline'));
+      assert.isFalse(connectionIndicator.hasAttribute('reconnecting'));
+      assert.isFalse(connectionIndicator.hasAttribute('loading'));
+      assert.equal(String(message.textContent).trim(), connectionIndicator.onlineText);
+      // Message did change from before loading, should cause expanded
+      assert.isTrue(connectionIndicator.hasAttribute('expanded'));
+      assert.isTrue(isPopoverOpen());
+      await sleep(20);
+      assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+      assert.isFalse(isPopoverOpen());
     });
 
     it('should not react on store state change after removed from DOM', async () => {
@@ -284,24 +291,28 @@ describe('ConnectionIndicator', () => {
       assert.isFalse(loadingBar.classList.contains('first'));
       assert.isFalse(loadingBar.classList.contains('second'));
       assert.isFalse(loadingBar.classList.contains('third'));
+      assert.isTrue(isPopoverOpen());
 
       await sleep(150);
       assert.isTrue(loadingBar.classList.contains('first'));
       assert.isFalse(loadingBar.classList.contains('second'));
       assert.isFalse(loadingBar.classList.contains('third'));
       assert.equal(loadingBar.getAttribute('style'), 'display: block');
+      assert.isTrue(isPopoverOpen());
 
       await sleep(150);
       assert.isFalse(loadingBar.classList.contains('first'));
       assert.isTrue(loadingBar.classList.contains('second'));
       assert.isFalse(loadingBar.classList.contains('third'));
       assert.equal(loadingBar.getAttribute('style'), 'display: block');
+      assert.isTrue(isPopoverOpen());
 
       await sleep(150);
       assert.isFalse(loadingBar.classList.contains('first'));
       assert.isFalse(loadingBar.classList.contains('second'));
       assert.isTrue(loadingBar.classList.contains('third'));
       assert.equal(loadingBar.getAttribute('style'), 'display: block');
+      assert.isTrue(isPopoverOpen());
 
       connectionStateStore.state = ConnectionState.CONNECTED;
       await connectionIndicator.updateComplete;
@@ -309,6 +320,7 @@ describe('ConnectionIndicator', () => {
       assert.isFalse(loadingBar.classList.contains('second'));
       assert.isFalse(loadingBar.classList.contains('third'));
       assert.equal(loadingBar.getAttribute('style'), 'display: none');
+      assert.isFalse(isPopoverOpen());
     });
   });
 });

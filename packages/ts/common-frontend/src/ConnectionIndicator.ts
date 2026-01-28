@@ -14,7 +14,7 @@
  * the License.
  */
 
-import { html, LitElement } from 'lit';
+import { html, LitElement, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ConnectionState, type ConnectionStateStore } from './ConnectionState.js';
@@ -118,6 +118,8 @@ export class ConnectionIndicator extends LitElement {
   @state()
   accessor #loadingBarState: LoadingBarState = LoadingBarState.IDLE;
 
+  accessor #isPopover: boolean = false;
+
   #applyDefaultThemeState = true;
 
   #firstTimeout = 0;
@@ -167,6 +169,8 @@ export class ConnectionIndicator extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
 
+    this.#initPopover();
+
     const $wnd = window as any;
     if ($wnd.Vaadin?.connectionState) {
       this.#connectionStateStore = $wnd.Vaadin.connectionState as ConnectionStateStore;
@@ -185,6 +189,13 @@ export class ConnectionIndicator extends LitElement {
     }
 
     this.#updateTheme();
+    this.#isPopover = false;
+  }
+
+  protected override updated(props: PropertyValues): void {
+    if (['loading', 'offline', 'reconnecting', 'expanded'].some((p) => props.has(p))) {
+      this.#updatePopoverState();
+    }
   }
 
   get applyDefaultTheme() {
@@ -201,6 +212,13 @@ export class ConnectionIndicator extends LitElement {
 
   protected override createRenderRoot() {
     return this;
+  }
+
+  #initPopover() {
+    // Allow showing the indicator as popover
+    this.setAttribute('popover', 'manual');
+    // Override user agent styles for popover
+    this.style.display = 'contents';
   }
 
   /**
@@ -259,6 +277,21 @@ export class ConnectionIndicator extends LitElement {
       },
       this.thirdDelay,
     );
+  }
+
+  #updatePopoverState() {
+    const showPopover = this.loading || this.offline || this.reconnecting || this.expanded;
+
+    // Always close the popover first on state changes. This way, on every state change,
+    // showPopover is called again, resulting in the connection indicator being shown on
+    // top of other popovers that might have been added, for example after a reconnect.
+    if (this.#isPopover) {
+      this.hidePopover();
+    }
+    if (showPopover) {
+      this.showPopover();
+    }
+    this.#isPopover = showPopover;
   }
 
   #renderMessage() {
@@ -335,7 +368,6 @@ export class ConnectionIndicator extends LitElement {
       .v-loading-indicator,
       .v-status-message {
         position: fixed;
-        z-index: 251;
         left: 0;
         right: auto;
         top: 0;
