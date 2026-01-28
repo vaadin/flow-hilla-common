@@ -1,6 +1,6 @@
 {
   "name": "@vaadin/common-frontend",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Vaadin frontend utils used by Flow and Hilla",
   "main": "index.js",
   "module": "index.js",
