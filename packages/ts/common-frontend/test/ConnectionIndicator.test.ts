@@ -85,6 +85,12 @@ describe('ConnectionIndicator', () => {
     it('should set popover styles when connected', () => {
       assert.equal(connectionIndicator.style.display, 'contents');
     });
+
+    it('should bypass pointer events by default', () => {
+      const messageBar = connectionIndicator.querySelector('.v-status-message')!;
+      const messageBarStyle = window.getComputedStyle(messageBar);
+      assert.equal(messageBarStyle.pointerEvents, 'none');
+    });
   });
 
   describe('with state store', () => {
@@ -164,6 +170,8 @@ describe('ConnectionIndicator', () => {
     it('should react on store state change', async () => {
       await setupIndicator();
 
+      const messageBar = connectionIndicator.querySelector('.v-status-message')!;
+
       connectionStateStore.state = ConnectionState.LOADING;
       await connectionIndicator.updateComplete;
       assert.isFalse(connectionIndicator.hasAttribute('offline'));
@@ -173,6 +181,7 @@ describe('ConnectionIndicator', () => {
       // Loading should not cause expanded message
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isTrue(isPopoverOpen());
+      assert.equal(window.getComputedStyle(messageBar).pointerEvents, 'none');
 
       connectionStateStore.state = ConnectionState.CONNECTED;
       await connectionIndicator.updateComplete;
@@ -183,6 +192,7 @@ describe('ConnectionIndicator', () => {
       // Message did not change from before loading, should not cause expanded
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isFalse(isPopoverOpen());
+      assert.equal(window.getComputedStyle(messageBar).pointerEvents, 'none');
 
       connectionStateStore.state = ConnectionState.RECONNECTING;
       await connectionIndicator.updateComplete;
@@ -196,6 +206,7 @@ describe('ConnectionIndicator', () => {
       await sleep(20);
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isTrue(isPopoverOpen());
+      assert.equal(window.getComputedStyle(messageBar).pointerEvents, 'auto');
 
       connectionStateStore.state = ConnectionState.CONNECTION_LOST;
       await connectionIndicator.updateComplete;
@@ -209,6 +220,7 @@ describe('ConnectionIndicator', () => {
       await sleep(20);
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isTrue(isPopoverOpen());
+      assert.equal(window.getComputedStyle(messageBar).pointerEvents, 'auto');
 
       connectionStateStore.state = ConnectionState.LOADING;
       await connectionIndicator.updateComplete;
@@ -219,6 +231,7 @@ describe('ConnectionIndicator', () => {
       // Loading should not cause expanded message
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isTrue(isPopoverOpen());
+      assert.equal(window.getComputedStyle(messageBar).pointerEvents, 'none');
 
       connectionStateStore.state = ConnectionState.CONNECTED;
       await connectionIndicator.updateComplete;
@@ -232,6 +245,7 @@ describe('ConnectionIndicator', () => {
       await sleep(20);
       assert.isFalse(connectionIndicator.hasAttribute('expanded'));
       assert.isFalse(isPopoverOpen());
+      assert.equal(window.getComputedStyle(messageBar).pointerEvents, 'none');
     });
 
     it('should not react on store state change after removed from DOM', async () => {
