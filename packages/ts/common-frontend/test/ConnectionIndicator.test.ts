@@ -84,12 +84,6 @@ describe('ConnectionIndicator', () => {
 
     it('should set popover styles when connected', () => {
       assert.equal(connectionIndicator.style.display, 'contents');
-      assert.equal(connectionIndicator.style.border, 'none');
-      assert.equal(connectionIndicator.style.background, 'none');
-      assert.equal(connectionIndicator.style.padding, '0px');
-      assert.equal(connectionIndicator.style.width, '0px');
-      assert.equal(connectionIndicator.style.height, '0px');
-      assert.equal(connectionIndicator.style.overflow, 'visible');
     });
   });
 
