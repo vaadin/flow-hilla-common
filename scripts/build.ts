@@ -23,7 +23,7 @@ const cssConstructPlugin: Plugin = {
   setup(_build) {
     // Here CSS imports like `import css from 'autocrud.obj.css';` are transformed to
     // JS imports: `import css from 'autocrud.obj.js'`.
-    _build.onLoad({ filter: /\.tsx?/u }, async ({ path }) => {
+    _build.onLoad({ filter: /\.tsx?$/ }, async ({ path }) => {
       const contents = await readFile(path, 'utf8');
 
       return {
@@ -33,7 +33,7 @@ const cssConstructPlugin: Plugin = {
     });
 
     // We transform CSS into a Constructible CSSStyleSheet to add it to the document on import.
-    _build.onLoad({ filter: /\.obj\.css/u }, async ({ path }) => {
+    _build.onLoad({ filter: /\.obj\.css$/ }, async ({ path }) => {
       const contents = await readFile(path, 'utf8');
       const processed = await cssTransformer
         .process(contents)
@@ -62,5 +62,8 @@ await build({
   plugins: [cssConstructPlugin],
   sourcemap: 'linked',
   sourcesContent: true,
+  supported: {
+    decorators: false,
+  },
   tsconfig: fileURLToPath(new URL('./tsconfig.build.json', packageRoot)),
 });
