@@ -5,6 +5,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { PackageJson } from 'type-fest';
 import { defineConfig } from 'vitest/config';
 import { loadRegisterJs } from './plugins.js';
+import process from 'node:process';
+import { playwright } from '@vitest/browser-playwright';
 
 const isCI = process.env.CI === 'true';
 
@@ -34,7 +36,6 @@ export default defineConfig({
   test: {
     coverage: {
       enabled: false,
-      all: true,
       provider: 'v8',
       reportsDirectory: fileURLToPath(new URL('.coverage/', cwd)),
       clean: true,
@@ -47,16 +48,17 @@ export default defineConfig({
       },
       ui: !isCI,
       screenshotFailures: isCI,
-      provider: 'playwright',
-      name: 'chromium',
+      provider: playwright(),
       enabled: true,
       headless: true,
       instances: [
         {
           browser: 'chromium',
-          launch: {
-            executablePath: process.env.CHROME_BIN,
-          },
+          provider: playwright({
+            launchOptions: {
+              executablePath: process.env.CHROME_BIN,
+            },
+          }),
         },
       ],
     },
