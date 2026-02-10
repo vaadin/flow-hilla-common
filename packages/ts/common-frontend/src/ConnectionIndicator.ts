@@ -404,6 +404,7 @@ export class ConnectionIndicator extends LitElement {
 
       .v-status-message {
         opacity: 0;
+        pointer-events: none;
         width: 100%;
         max-height: var(--status-height-collapsed, 8px);
         overflow: hidden;
@@ -422,6 +423,7 @@ export class ConnectionIndicator extends LitElement {
       vaadin-connection-indicator[offline] .v-status-message,
       vaadin-connection-indicator[reconnecting] .v-status-message {
         opacity: 1;
+        pointer-events: auto;
         background-color: var(--status-bg-color-offline, var(--lumo-shade, #333));
         color: var(
           --status-text-color-offline,
@@ -448,6 +450,7 @@ export class ConnectionIndicator extends LitElement {
 
       vaadin-connection-indicator[expanded] .v-status-message {
         opacity: 1;
+        pointer-events: auto;
       }
 
       .v-status-message span {
