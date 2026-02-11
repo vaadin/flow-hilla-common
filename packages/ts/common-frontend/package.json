@@ -1,6 +1,6 @@
 {
   "name": "@vaadin/common-frontend",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Vaadin frontend utils used by Flow and Hilla",
   "main": "index.js",
   "module": "index.js",
@@ -69,5 +69,5 @@
     "type-fest": "5.4.4",
     "vitest": "4.0.18"
   },
-  "dependencies": { }
+  "dependencies": {}
 }
