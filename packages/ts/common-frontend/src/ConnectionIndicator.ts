@@ -219,6 +219,16 @@ export class ConnectionIndicator extends LitElement {
     this.setAttribute('popover', 'manual');
     // Override user agent styles for popover
     this.style.display = 'contents';
+    this.style.width = 'auto';
+    this.style.height = 'auto';
+    this.style.top = '0';
+    this.style.right = '0';
+    this.style.bottom = 'auto';
+    this.style.left = '0';
+    this.style.margin = '0';
+    this.style.padding = '0';
+    this.style.background = 'none';
+    this.style.border = 'none';
   }
 
   /**

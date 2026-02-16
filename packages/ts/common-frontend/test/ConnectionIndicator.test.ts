@@ -84,6 +84,16 @@ describe('ConnectionIndicator', () => {
 
     it('should set popover styles when connected', () => {
       assert.equal(connectionIndicator.style.display, 'contents');
+      assert.equal(connectionIndicator.style.width, 'auto');
+      assert.equal(connectionIndicator.style.height, 'auto');
+      assert.equal(Number.parseFloat(connectionIndicator.style.top), 0);
+      assert.equal(Number.parseFloat(connectionIndicator.style.right), 0);
+      assert.equal(connectionIndicator.style.bottom, 'auto');
+      assert.equal(Number.parseFloat(connectionIndicator.style.left), 0);
+      assert.equal(Number.parseFloat(connectionIndicator.style.margin), 0);
+      assert.equal(Number.parseFloat(connectionIndicator.style.padding), 0);
+      assert.equal(connectionIndicator.style.background, 'none');
+      assert.equal(connectionIndicator.style.border, 'none');
     });
 
     it('should bypass pointer events by default', () => {
