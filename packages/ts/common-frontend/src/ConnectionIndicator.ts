@@ -226,6 +226,7 @@ export class ConnectionIndicator extends LitElement {
     this.style.bottom = 'auto';
     this.style.left = '0';
     this.style.margin = '0';
+    this.style.padding = '0';
     this.style.background = 'none';
     this.style.border = 'none';
   }

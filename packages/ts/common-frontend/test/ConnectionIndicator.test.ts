@@ -91,6 +91,7 @@ describe('ConnectionIndicator', () => {
       assert.equal(connectionIndicator.style.bottom, 'auto');
       assert.equal(Number.parseFloat(connectionIndicator.style.left), 0);
       assert.equal(Number.parseFloat(connectionIndicator.style.margin), 0);
+      assert.equal(Number.parseFloat(connectionIndicator.style.padding), 0);
       assert.equal(connectionIndicator.style.background, 'none');
       assert.equal(connectionIndicator.style.border, 'none');
     });
