@@ -377,14 +377,16 @@ export class ConnectionIndicator extends LitElement {
       }
       .v-loading-indicator,
       .v-status-message {
+        box-sizing: border-box;
         position: fixed;
         left: 0;
-        right: auto;
+        right: 0;
         top: 0;
         background-color: var(--lumo-primary-color, var(--material-primary-color, blue));
         transition: none;
       }
       .v-loading-indicator {
+        right: auto;
         width: 50%;
         height: 4px;
         opacity: 1;
@@ -415,7 +417,6 @@ export class ConnectionIndicator extends LitElement {
       .v-status-message {
         opacity: 0;
         pointer-events: none;
-        width: 100%;
         max-height: var(--status-height-collapsed, 8px);
         overflow: hidden;
         background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
