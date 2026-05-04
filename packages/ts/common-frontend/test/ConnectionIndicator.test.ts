@@ -101,6 +101,11 @@ describe('ConnectionIndicator', () => {
       const messageBarStyle = window.getComputedStyle(messageBar);
       assert.equal(messageBarStyle.pointerEvents, 'none');
     });
+
+    it('should have border-box sizing', () => {
+      const messageBar = connectionIndicator.querySelector('.v-status-message')!;
+      assert.equal(window.getComputedStyle(messageBar).boxSizing, 'border-box');
+    });
   });
 
   describe('with state store', () => {
