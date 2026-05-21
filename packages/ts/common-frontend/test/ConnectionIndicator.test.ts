@@ -61,18 +61,25 @@ describe('ConnectionIndicator', () => {
     it('should apply default theme', () => {
       const style = document.querySelector('#css-loading-indicator');
       assert.isNotNull(style);
+      const internalStyle = document.querySelector('#css-loading-indicator-internal');
+      assert.isNotNull(internalStyle);
     });
 
     it('should remove css if default theme not applied', () => {
       connectionIndicator.applyDefaultTheme = false;
       const style = document.querySelector('#css-loading-indicator');
       assert.isNull(style);
+      // internal style should still be applied
+      const internalStyle = document.querySelector('#css-loading-indicator-internal');
+      assert.isNotNull(internalStyle);
     });
 
     it('should remove css when removed from dom', () => {
       connectionIndicator.remove();
       const style = document.querySelector('#css-loading-indicator');
       assert.isNull(style);
+      const internalStyle = document.querySelector('#css-loading-indicator-internal');
+      assert.isNull(internalStyle);
 
       // Add back to prevent errors in afterEach
       document.body.prepend(connectionIndicator);
@@ -83,17 +90,29 @@ describe('ConnectionIndicator', () => {
     });
 
     it('should set popover styles when connected', () => {
-      assert.equal(connectionIndicator.style.display, 'contents');
-      assert.equal(connectionIndicator.style.width, 'auto');
-      assert.equal(connectionIndicator.style.height, 'auto');
-      assert.equal(Number.parseFloat(connectionIndicator.style.top), 0);
-      assert.equal(Number.parseFloat(connectionIndicator.style.right), 0);
-      assert.equal(connectionIndicator.style.bottom, 'auto');
-      assert.equal(Number.parseFloat(connectionIndicator.style.left), 0);
-      assert.equal(Number.parseFloat(connectionIndicator.style.margin), 0);
-      assert.equal(Number.parseFloat(connectionIndicator.style.padding), 0);
-      assert.equal(connectionIndicator.style.background, 'none');
-      assert.equal(connectionIndicator.style.border, 'none');
+      const computedStyle = getComputedStyle(connectionIndicator);
+      assert.equal(computedStyle.display, 'contents');
+      assert.equal(computedStyle.width, 'auto');
+      assert.equal(computedStyle.height, 'auto');
+      assert.equal(Number.parseFloat(computedStyle.top), 0);
+      assert.equal(Number.parseFloat(computedStyle.right), 0);
+      assert.equal(computedStyle.bottom, 'auto');
+      assert.equal(Number.parseFloat(computedStyle.left), 0);
+      assert.equal(Number.parseFloat(computedStyle.margin), 0);
+      assert.equal(Number.parseFloat(computedStyle.padding), 0);
+      assert.equal(computedStyle.backgroundColor, 'rgba(0, 0, 0, 0)');
+      assert.equal(computedStyle.borderWidth, '0px');
+    });
+
+    it('should reset popover attribute when opt-out', () => {
+      connectionIndicator.popoverOptOut = true;
+      assert.equal(connectionIndicator.hasAttribute('popover'), false);
+    });
+
+    it('should reset popover styles when opt-out', () => {
+      connectionIndicator.popoverOptOut = true;
+      const computedStyle = getComputedStyle(connectionIndicator);
+      assert.equal(computedStyle.display, 'inline');
     });
 
     it('should bypass pointer events by default', () => {

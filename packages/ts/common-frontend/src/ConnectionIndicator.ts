@@ -14,10 +14,12 @@
  * the License.
  */
 
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, css, LitElement, type PropertyValues, type CSSResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ConnectionState, type ConnectionStateStore } from './ConnectionState.js';
+
+const INTERNAL_STYLE_ID = 'css-loading-indicator-internal';
 
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
 
@@ -122,6 +124,8 @@ export class ConnectionIndicator extends LitElement {
 
   #applyDefaultThemeState = true;
 
+  #popoverOptOut = false;
+
   #firstTimeout = 0;
 
   #secondTimeout = 0;
@@ -169,8 +173,6 @@ export class ConnectionIndicator extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
 
-    this.#initPopover();
-
     const $wnd = window as any;
     if ($wnd.Vaadin?.connectionState) {
       this.#connectionStateStore = $wnd.Vaadin.connectionState as ConnectionStateStore;
@@ -178,7 +180,9 @@ export class ConnectionIndicator extends LitElement {
       this.#updateConnectionState();
     }
 
+    this.#updateInternalStyle();
     this.#updateTheme();
+    this.#updatePopoverOptOut();
   }
 
   override disconnectedCallback() {
@@ -188,12 +192,13 @@ export class ConnectionIndicator extends LitElement {
       this.#connectionStateStore.removeStateChangeListener(this.connectionStateListener);
     }
 
+    this.#updateInternalStyle();
     this.#updateTheme();
     this.#isPopover = false;
   }
 
   protected override updated(props: PropertyValues): void {
-    if (['loading', 'offline', 'reconnecting', 'expanded'].some((p) => props.has(p))) {
+    if (['loading', 'offline', 'reconnecting', 'expanded', 'popoverOptOut'].some((p) => props.has(p))) {
       this.#updatePopoverState();
     }
   }
@@ -210,25 +215,31 @@ export class ConnectionIndicator extends LitElement {
     }
   }
 
+  get popoverOptOut() {
+    return this.#popoverOptOut;
+  }
+
+  @property({type: Boolean, reflect: true })
+  set popoverOptOut(popoverOptOut: boolean) {
+    if (this.#popoverOptOut === popoverOptOut) {
+      return;
+    }
+
+    this.#popoverOptOut = popoverOptOut;
+    this.#updatePopoverOptOut();
+  }
+
   protected override createRenderRoot() {
     return this;
   }
 
-  #initPopover() {
-    // Allow showing the indicator as popover
-    this.setAttribute('popover', 'manual');
-    // Override user agent styles for popover
-    this.style.display = 'contents';
-    this.style.width = 'auto';
-    this.style.height = 'auto';
-    this.style.top = '0';
-    this.style.right = '0';
-    this.style.bottom = 'auto';
-    this.style.left = '0';
-    this.style.margin = '0';
-    this.style.padding = '0';
-    this.style.background = 'none';
-    this.style.border = 'none';
+  #updatePopoverOptOut() {
+    if (this.#popoverOptOut) {
+      this.removeAttribute('popover');
+    } else {
+      // Allow showing the indicator as popover
+      this.setAttribute('popover', 'manual');
+    }
   }
 
   /**
@@ -290,6 +301,11 @@ export class ConnectionIndicator extends LitElement {
   }
 
   #updatePopoverState() {
+    if (this.popoverOptOut) {
+      this.#isPopover = false;
+      return;
+    }
+
     const showPopover = this.loading || this.offline || this.reconnecting || this.expanded;
 
     // Always close the popover first on state changes. This way, on every state change,
@@ -316,24 +332,44 @@ export class ConnectionIndicator extends LitElement {
     return this.onlineText;
   }
 
+  #updateInternalStyle() {
+    this.#updateStyleState(INTERNAL_STYLE_ID, this.#getInternalStyle, this.isConnected);
+  }
+
   #updateTheme() {
-    if (this.#applyDefaultThemeState && this.isConnected) {
-      if (!document.getElementById(DEFAULT_STYLE_ID)) {
-        const style = document.createElement('style');
-        style.id = DEFAULT_STYLE_ID;
-        style.textContent = this.#getDefaultStyle();
-        document.head.appendChild(style);
-      }
-    } else {
-      const style = document.getElementById(DEFAULT_STYLE_ID);
-      if (style) {
-        document.head.removeChild(style);
-      }
+    this.#updateStyleState(DEFAULT_STYLE_ID, this.#getDefaultStyle, this.isConnected && this.#applyDefaultThemeState);
+  }
+
+  #updateStyleState(id: string, cssSupplier: () => CSSResult, state: boolean) {
+    let style = document.getElementById(id);
+    if (state && !style) {
+      style = document.createElement('style');
+      style.id = id;
+      style.textContent = cssSupplier().cssText;
+      document.head.appendChild(style);
+    } else if (!state && style) {
+      document.head.removeChild(style);
     }
   }
 
-  #getDefaultStyle(): string {
-    return `
+  #getInternalStyle(): CSSResult {
+    return css`
+      /* Override user agent styles for popover */
+      vaadin-connection-indicator[popover] {
+        display: contents; 
+        width: auto;
+        height: auto;
+        inset: 0 0 auto;
+        margin: 0;
+        padding: 0;
+        background: none;
+        border: none;
+      }
+    `;
+  }
+
+  #getDefaultStyle(): CSSResult {
+    return css`
       @keyframes v-progress-start {
         0% {
           width: 0%;
@@ -379,6 +415,7 @@ export class ConnectionIndicator extends LitElement {
       .v-status-message {
         box-sizing: border-box;
         position: fixed;
+        z-index: 251;
         left: 0;
         right: 0;
         top: 0;
