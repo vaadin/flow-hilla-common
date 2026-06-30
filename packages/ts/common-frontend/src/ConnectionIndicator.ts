@@ -344,7 +344,17 @@ export class ConnectionIndicator extends LitElement {
         background: none;
         border: none;
       }
+        
+      .v-loading-indicator,
+      .v-status-message {
+        pointer-events: none;
+      }
 
+      /*
+       Make sure the connection indicator content is hidden, as expected to when
+       "applyDefaultTheme" is set to false. Typically, either theme or user
+       styles override these and show the indicator.
+       */ 
       .v-loading-indicator,
       .v-status-message {
         pointer-events: none;
@@ -411,7 +421,6 @@ export class ConnectionIndicator extends LitElement {
         width: 50%;
         height: 4px;
         opacity: 1;
-        pointer-events: none;
         animation: v-progress-start 1000ms 200ms both;
       }
       .v-loading-indicator[style*='none'] {
@@ -437,7 +446,6 @@ export class ConnectionIndicator extends LitElement {
 
       .v-status-message {
         opacity: 0;
-        pointer-events: none;
         max-height: var(--status-height-collapsed, 8px);
         overflow: hidden;
         background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
