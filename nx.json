@@ -17,5 +17,6 @@
         "cacheableOperations": ["build", "build:esbuild", "build:dts", "build:copy"]
       }
     }
-  }
+  },
+  "analytics": false
 }
