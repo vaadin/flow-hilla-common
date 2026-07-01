@@ -61,18 +61,28 @@ describe('ConnectionIndicator', () => {
     it('should apply default theme', () => {
       const style = document.querySelector('#css-loading-indicator');
       assert.isNotNull(style);
+      const functionalStyle = document.querySelector('#css-loading-indicator-functional');
+      assert.isNotNull(functionalStyle);
+      const headChildNodes = Array.from(document.head.childNodes);
+      const functionalStyleOrder = headChildNodes.indexOf(functionalStyle);
+      const styleOrder = headChildNodes.indexOf(style);
+      assert.isBelow(functionalStyleOrder, styleOrder, "functional indicator style must come before theme style in document.head");
     });
 
     it('should remove css if default theme not applied', () => {
       connectionIndicator.applyDefaultTheme = false;
       const style = document.querySelector('#css-loading-indicator');
       assert.isNull(style);
+      const functionalStyle = document.querySelector('#css-loading-indicator-functional');
+      assert.isNotNull(functionalStyle);
     });
 
     it('should remove css when removed from dom', () => {
       connectionIndicator.remove();
       const style = document.querySelector('#css-loading-indicator');
       assert.isNull(style);
+      const functionalStyle = document.querySelector('#css-loading-indicator-functional');
+      assert.isNull(functionalStyle);
 
       // Add back to prevent errors in afterEach
       document.body.prepend(connectionIndicator);
@@ -83,20 +93,36 @@ describe('ConnectionIndicator', () => {
     });
 
     it('should set popover styles when connected', () => {
-      assert.equal(connectionIndicator.style.display, 'contents');
-      assert.equal(connectionIndicator.style.width, 'auto');
-      assert.equal(connectionIndicator.style.height, 'auto');
-      assert.equal(Number.parseFloat(connectionIndicator.style.top), 0);
-      assert.equal(Number.parseFloat(connectionIndicator.style.right), 0);
-      assert.equal(connectionIndicator.style.bottom, 'auto');
-      assert.equal(Number.parseFloat(connectionIndicator.style.left), 0);
-      assert.equal(Number.parseFloat(connectionIndicator.style.margin), 0);
-      assert.equal(Number.parseFloat(connectionIndicator.style.padding), 0);
-      assert.equal(connectionIndicator.style.background, 'none');
-      assert.equal(connectionIndicator.style.border, 'none');
+      const connectionIndicatorStyle = window.getComputedStyle(connectionIndicator);
+      assert.equal(connectionIndicatorStyle.display, 'contents');
+      assert.equal(connectionIndicatorStyle.width, 'auto');
+      assert.equal(connectionIndicatorStyle.height, 'auto');
+      assert.equal(Number.parseFloat(connectionIndicatorStyle.top), 0);
+      assert.equal(Number.parseFloat(connectionIndicatorStyle.right), 0);
+      assert.equal(connectionIndicatorStyle.bottom, 'auto');
+      assert.equal(Number.parseFloat(connectionIndicatorStyle.left), 0);
+      assert.equal(Number.parseFloat(connectionIndicatorStyle.margin), 0);
+      assert.equal(Number.parseFloat(connectionIndicatorStyle.padding), 0);
+      assert.equal(connectionIndicatorStyle.backgroundColor, 'rgba(0, 0, 0, 0)');
+      assert.equal(connectionIndicatorStyle.borderStyle, 'none');
+    });
+
+    it('should be invisible when default theme is not applied', () => {
+      connectionIndicator.applyDefaultTheme = false;
+      const loadingIndicator = connectionIndicator.querySelector('.v-loading-indicator')!;
+      const loadingIndicatorStyle = window.getComputedStyle(loadingIndicator);
+      assert.equal(Number.parseFloat(loadingIndicatorStyle.opacity), 0);
+      assert.equal(loadingIndicatorStyle.pointerEvents, 'none');
+      const messageBar = connectionIndicator.querySelector('.v-status-message')!;
+      const messageBarStyle = window.getComputedStyle(messageBar);
+      assert.equal(Number.parseFloat(messageBarStyle.opacity), 0);
+      assert.equal(messageBarStyle.pointerEvents, 'none');
     });
 
     it('should bypass pointer events by default', () => {
+      const loadingIndicator = connectionIndicator.querySelector('.v-loading-indicator')!;
+      const loadingIndicatorStyle = window.getComputedStyle(loadingIndicator);
+      assert.equal(loadingIndicatorStyle.pointerEvents, 'none');
       const messageBar = connectionIndicator.querySelector('.v-status-message')!;
       const messageBarStyle = window.getComputedStyle(messageBar);
       assert.equal(messageBarStyle.pointerEvents, 'none');

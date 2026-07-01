@@ -14,11 +14,12 @@
  * the License.
  */
 
-import { html, LitElement, type PropertyValues } from 'lit';
+import { html, css, LitElement, type CSSResult, type PropertyValues } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ConnectionState, type ConnectionStateStore } from './ConnectionState.js';
 
+const FUNCTIONAL_STYLE_ID = 'css-loading-indicator-functional';
 const DEFAULT_STYLE_ID = 'css-loading-indicator';
 
 /**
@@ -217,18 +218,6 @@ export class ConnectionIndicator extends LitElement {
   #initPopover() {
     // Allow showing the indicator as popover
     this.setAttribute('popover', 'manual');
-    // Override user agent styles for popover
-    this.style.display = 'contents';
-    this.style.width = 'auto';
-    this.style.height = 'auto';
-    this.style.top = '0';
-    this.style.right = '0';
-    this.style.bottom = 'auto';
-    this.style.left = '0';
-    this.style.margin = '0';
-    this.style.padding = '0';
-    this.style.background = 'none';
-    this.style.border = 'none';
   }
 
   /**
@@ -316,24 +305,66 @@ export class ConnectionIndicator extends LitElement {
     return this.onlineText;
   }
 
-  #updateTheme() {
-    if (this.#applyDefaultThemeState && this.isConnected) {
-      if (!document.getElementById(DEFAULT_STYLE_ID)) {
+  #updateStyle(id: string, shouldApply: boolean, styleTemplate: (this: ConnectionIndicator) => CSSResult) {
+    if (shouldApply) {
+      if (!document.getElementById(id)) {
         const style = document.createElement('style');
-        style.id = DEFAULT_STYLE_ID;
-        style.textContent = this.#getDefaultStyle();
+        style.id = id;
+        style.textContent = styleTemplate.apply(this).cssText;
         document.head.appendChild(style);
       }
     } else {
-      const style = document.getElementById(DEFAULT_STYLE_ID);
+      const style = document.getElementById(id);
       if (style) {
         document.head.removeChild(style);
       }
     }
   }
 
-  #getDefaultStyle(): string {
-    return `
+  #updateTheme() {
+    // Functional style applies positioning and makes the indicator
+    // invisible by default with disabled theme, as documented. The
+    // style is always present, regardless of applyDefaultTheme.
+    this.#updateStyle(FUNCTIONAL_STYLE_ID, this.isConnected, this.#getFunctionalStyle);
+    // Theme styles are removed when applyDefaultTheme is set to false.
+    this.#updateStyle(DEFAULT_STYLE_ID, this.#applyDefaultThemeState && this.isConnected, this.#getDefaultStyle);
+  }
+
+  #getFunctionalStyle(): CSSResult {
+    return css`
+      /* Override user agent styles for popover */
+      vaadin-connection-indicator[popover] {
+        display: contents;
+        width: auto;
+        height: auto;
+        inset: 0;
+        bottom: auto;
+        margin: 0;
+        padding: 0;
+        background: none;
+        border: none;
+      }
+        
+      .v-loading-indicator,
+      .v-status-message {
+        pointer-events: none;
+      }
+
+      /*
+       Make sure the connection indicator content is hidden, as expected to when
+       "applyDefaultTheme" is set to false. Typically, either theme or user
+       styles override these and show the indicator.
+       */ 
+      .v-loading-indicator,
+      .v-status-message {
+        pointer-events: none;
+        opacity: 0;
+      }
+    `;
+  }
+
+  #getDefaultStyle(): CSSResult {
+    return css`
       @keyframes v-progress-start {
         0% {
           width: 0%;
@@ -390,7 +421,6 @@ export class ConnectionIndicator extends LitElement {
         width: 50%;
         height: 4px;
         opacity: 1;
-        pointer-events: none;
         animation: v-progress-start 1000ms 200ms both;
       }
       .v-loading-indicator[style*='none'] {
@@ -416,7 +446,6 @@ export class ConnectionIndicator extends LitElement {
 
       .v-status-message {
         opacity: 0;
-        pointer-events: none;
         max-height: var(--status-height-collapsed, 8px);
         overflow: hidden;
         background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
