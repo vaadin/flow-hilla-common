@@ -330,7 +330,7 @@ export class ConnectionIndicator extends LitElement {
     this.#updateStyle(DEFAULT_STYLE_ID, this.#applyDefaultThemeState && this.isConnected, this.#getDefaultStyle);
   }
 
-  #getFunctionalStyle(): CSSResult {
+  #getFunctionalStyle(this: void): CSSResult {
     return css`
       /* Override user agent styles for popover */
       vaadin-connection-indicator[popover] {
@@ -344,7 +344,7 @@ export class ConnectionIndicator extends LitElement {
         background: none;
         border: none;
       }
-        
+
       .v-loading-indicator,
       .v-status-message {
         pointer-events: none;
@@ -354,7 +354,7 @@ export class ConnectionIndicator extends LitElement {
        Make sure the connection indicator content is hidden, as expected to when
        "applyDefaultTheme" is set to false. Typically, either theme or user
        styles override these and show the indicator.
-       */ 
+       */
       .v-loading-indicator,
       .v-status-message {
         pointer-events: none;
@@ -363,7 +363,7 @@ export class ConnectionIndicator extends LitElement {
     `;
   }
 
-  #getDefaultStyle(): CSSResult {
+  #getDefaultStyle(this: void): CSSResult {
     return css`
       @keyframes v-progress-start {
         0% {
@@ -428,7 +428,9 @@ export class ConnectionIndicator extends LitElement {
         width: 100%;
         opacity: 0;
         animation: none;
-        transition: opacity 500ms 300ms, width 300ms;
+        transition:
+          opacity 500ms 300ms,
+          width 300ms;
       }
       .v-loading-indicator.second {
         width: 90%;
@@ -436,7 +438,9 @@ export class ConnectionIndicator extends LitElement {
       }
       .v-loading-indicator.third {
         width: 96%;
-        animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;
+        animation:
+          v-progress-wait 5s forwards,
+          v-progress-wait-pulse 1s 4s infinite backwards;
       }
 
       vaadin-connection-indicator[offline] .v-loading-indicator,

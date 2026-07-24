@@ -66,7 +66,11 @@ describe('ConnectionIndicator', () => {
       const headChildNodes = Array.from(document.head.childNodes);
       const functionalStyleOrder = headChildNodes.indexOf(functionalStyle);
       const styleOrder = headChildNodes.indexOf(style);
-      assert.isBelow(functionalStyleOrder, styleOrder, "functional indicator style must come before theme style in document.head");
+      assert.isBelow(
+        functionalStyleOrder,
+        styleOrder,
+        'functional indicator style must come before theme style in document.head',
+      );
     });
 
     it('should remove css if default theme not applied', () => {
