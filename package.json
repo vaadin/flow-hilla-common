@@ -30,8 +30,16 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@nx/js": "22.7.6",
+    "@types/chai": "5.2.3",
     "@types/node": "24.10.12",
-    "concurrently": "9.2.3",
+    "@types/sinon": "22.0.0",
+    "@types/sinon-chai": "4.0.0",
+    "@vitest/browser": "4.1.10",
+    "@vitest/browser-playwright": "4.1.10",
+    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/ui": "4.1.10",
+    "chai": "5.3.3",
+    "concurrently": "9.2.4",
     "cssnano": "7.1.2",
     "esbuild": "0.28.1",
     "eslint": "8.57.1",
@@ -44,10 +52,16 @@
     "nx": "22.7.6",
     "postcss": "8.5.16",
     "prettier": "3.8.1",
+    "sinon": "22.1.0",
+    "sinon-chai": "4.0.1",
     "simple-git-hooks": "2.13.1",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vite": "7.3.6",
-    "vitest": "4.1.9"
+    "vitest": "4.1.10"
+  },
+  "overrides": {
+    "axios": "1.18.1",
+    "brace-expansion": "5.0.8"
   }
 }
