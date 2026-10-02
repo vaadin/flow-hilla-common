@@ -413,7 +413,7 @@ export class ConnectionIndicator extends LitElement {
         left: 0;
         right: 0;
         top: 0;
-        background-color: var(--lumo-primary-color, var(--material-primary-color, blue));
+        background-color: var(--lumo-primary-color, var(--aura-accent-color, blue));
         transition: none;
       }
       .v-loading-indicator {
@@ -452,10 +452,10 @@ export class ConnectionIndicator extends LitElement {
         opacity: 0;
         max-height: var(--status-height-collapsed, 8px);
         overflow: hidden;
-        background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--material-primary-color, blue)));
+        background-color: var(--status-bg-color-online, var(--lumo-primary-color, var(--aura-accent-color, blue)));
         color: var(
           --status-text-color-online,
-          var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff))
+          var(--lumo-primary-contrast-color, var(--aura-accent-contrast-color, #fff))
         );
         font-size: 0.75rem;
         font-weight: 600;
@@ -471,7 +471,7 @@ export class ConnectionIndicator extends LitElement {
         background-color: var(--status-bg-color-offline, var(--lumo-shade, #333));
         color: var(
           --status-text-color-offline,
-          var(--lumo-primary-contrast-color, var(--material-primary-contrast-color, #fff))
+          var(--lumo-primary-contrast-color, var(--aura-accent-contrast-color, #fff))
         );
         background-image: repeating-linear-gradient(
           45deg,
@@ -509,9 +509,9 @@ export class ConnectionIndicator extends LitElement {
         width: 1em;
         height: 1em;
         border-top: 2px solid
-          var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
+          var(--status-spinner-color, var(--lumo-primary-color, var(--aura-accent-color, blue)));
         border-left: 2px solid
-          var(--status-spinner-color, var(--lumo-primary-color, var(--material-primary-color, blue)));
+          var(--status-spinner-color, var(--lumo-primary-color, var(--aura-accent-color, blue)));
         border-right: 2px solid transparent;
         border-bottom: 2px solid transparent;
         border-radius: 50%;
