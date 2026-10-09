@@ -486,8 +486,8 @@ export class ConnectionIndicator extends LitElement {
         animation: show-reconnecting-status 2s;
       }
 
-      vaadin-connection-indicator[offline] .v-status-message:hover,
-      vaadin-connection-indicator[reconnecting] .v-status-message:hover,
+      vaadin-connection-indicator[offline] .v-status-message,
+      vaadin-connection-indicator[reconnecting] .v-status-message,
       vaadin-connection-indicator[expanded] .v-status-message {
         max-height: var(--status-height, 1.75rem);
       }
