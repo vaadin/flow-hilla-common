@@ -212,6 +212,21 @@ describe('ConnectionIndicator', () => {
       assert.isTrue(isPopoverOpen());
     });
 
+    [ConnectionState.RECONNECTING, ConnectionState.CONNECTION_LOST].forEach((state) => {
+      it(`should keep the message visible when ${state} after the expanded duration`, async () => {
+        await setupIndicator();
+        const messageBar = connectionIndicator.querySelector<HTMLElement>('.v-status-message')!;
+        messageBar.style.transition = 'none';
+
+        connectionStateStore.state = state;
+        await connectionIndicator.updateComplete;
+        await sleep(connectionIndicator.expandedDuration + 20);
+
+        assert.isFalse(connectionIndicator.hasAttribute('expanded'));
+        assert.equal(messageBar.getBoundingClientRect().height, message.getBoundingClientRect().height);
+      });
+    });
+
     it('should react on store state change', async () => {
       await setupIndicator();
 
