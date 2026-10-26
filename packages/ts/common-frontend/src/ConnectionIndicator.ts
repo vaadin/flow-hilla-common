@@ -508,10 +508,8 @@ export class ConnectionIndicator extends LitElement {
         content: '';
         width: 1em;
         height: 1em;
-        border-top: 2px solid
-          var(--status-spinner-color, var(--lumo-primary-color, var(--aura-accent-color, blue)));
-        border-left: 2px solid
-          var(--status-spinner-color, var(--lumo-primary-color, var(--aura-accent-color, blue)));
+        border-top: 2px solid var(--status-spinner-color, var(--lumo-primary-color, var(--aura-accent-color, blue)));
+        border-left: 2px solid var(--status-spinner-color, var(--lumo-primary-color, var(--aura-accent-color, blue)));
         border-right: 2px solid transparent;
         border-bottom: 2px solid transparent;
         border-radius: 50%;
