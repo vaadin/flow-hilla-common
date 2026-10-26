@@ -1,0 +1,134 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version: patch, minor, major, prerelease, or an exact version like 0.1.0 or 0.1.0-beta.1'
+        required: true
+        default: patch
+      dist-tag:
+        description: 'npm dist-tag to publish under'
+        required: true
+        default: latest
+      dry-run:
+        description: 'Build and pack only, do not push or publish'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # push the release commit and tag, create the GitHub release
+  id-token: write # npm trusted publishing and provenance
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release @vaadin/common-frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NX_SKIP_NX_CACHE: true
+      PACKAGE_DIR: packages/ts/common-frontend
+      INPUT_VERSION: ${{ inputs.version }}
+      DIST_TAG: ${{ inputs.dist-tag }}
+      DRY_RUN: ${{ inputs.dry-run }}
+
+    steps:
+      - name: Install Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+
+      # Push as vaadin-bot, which is allowed to bypass the branch protection of main
+      - name: Checkout Project Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.VAADIN_BOT_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      # Trusted publishing needs npm 11.5.1 or newer
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Install
+        run: npm ci
+
+      # Only @vaadin/common-frontend is released, the root package is private
+      - name: Bump version
+        id: bump
+        run: |
+          (cd "$PACKAGE_DIR" && npm version "$INPUT_VERSION" --no-git-tag-version --no-workspaces-update)
+          npm install --package-lock-only --ignore-scripts
+          VERSION=$(node -p "require('./$PACKAGE_DIR/package.json').version")
+          NAME=$(node -p "require('./$PACKAGE_DIR/package.json').name")
+
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "::error::Tag $VERSION already exists"
+            exit 1
+          fi
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "::error::$NAME@$VERSION is already published on npm"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing $NAME@$VERSION with dist-tag '$DIST_TAG'" >> "$GITHUB_STEP_SUMMARY"
+
+      # The version is inlined into the bundle by scripts/build.ts, so build after bumping
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run check
+
+      - name: Test
+        run: npm test
+        env:
+          CI: true
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
+
+      - name: Pack
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm pack --dry-run
+
+      - name: Commit and tag
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name 'vaadin-bot'
+          git config user.email '20280877+vaadin-bot@users.noreply.github.com'
+          git add package-lock.json "$PACKAGE_DIR/package.json"
+          git commit -m "chore(release): $VERSION"
+          git tag "$VERSION"
+          git show --stat HEAD
+
+      # Push before publishing so a branch protection failure stops the release
+      # before anything reaches npm
+      - name: Push
+        if: ${{ !inputs.dry-run }}
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: git push --atomic origin "HEAD:${GITHUB_REF_NAME}" "refs/tags/$VERSION"
+
+      # Authenticates with npm trusted publishing (OIDC), no npm token is needed
+      - name: Publish to npm
+        if: ${{ !inputs.dry-run }}
+        working-directory: ${{ env.PACKAGE_DIR }}
+        run: npm publish --provenance --access public --tag "$DIST_TAG"
+
+      - name: Create GitHub release
+        if: ${{ !inputs.dry-run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          PRERELEASE=()
+          if [[ "$VERSION" == *-* ]]; then PRERELEASE=(--prerelease); fi
+          gh release create "$VERSION" --title "$VERSION" --generate-notes --verify-tag "${PRERELEASE[@]}"
