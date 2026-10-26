@@ -52,7 +52,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          registry-url: 'https://registry.npmjs.org'
 
       # Trusted publishing needs npm 11.5.1 or newer
       - name: Update npm
@@ -118,13 +117,11 @@ jobs:
           VERSION: ${{ steps.bump.outputs.version }}
         run: git push --atomic origin "HEAD:${GITHUB_REF_NAME}" "refs/tags/$VERSION"
 
+      # Authenticates with npm trusted publishing (OIDC), no npm token is needed
       - name: Publish to npm
         if: ${{ !inputs.dry-run }}
         working-directory: ${{ env.PACKAGE_DIR }}
         run: npm publish --provenance --access public --tag "$DIST_TAG"
-        env:
-          # Only used when npm trusted publishing is not configured for the package
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         if: ${{ !inputs.dry-run }}
